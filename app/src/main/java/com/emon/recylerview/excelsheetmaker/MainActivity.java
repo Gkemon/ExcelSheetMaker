@@ -1,6 +1,8 @@
 package com.emon.recylerview.excelsheetmaker;
 
+import android.Manifest;
 import android.os.Environment;
+import android.support.annotation.RequiresPermission;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,16 +19,20 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends PermissionActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if(checkHasPermission(RequestCode.PERMISSION_WRITE_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE))
         createExcelSheet();
 
 
     }
+
+
 
     public static void debugLog(String msg){
 
@@ -46,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         File sdCard = Environment.getExternalStorageDirectory();
         File directory = new File (sdCard.getAbsolutePath() + "/Result");
         directory.mkdirs();
+
         File file = new File(directory, Fnamexls);
 
         WorkbookSettings wbSettings = new WorkbookSettings();
@@ -60,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             WritableSheet sheet = workbook.createSheet("First Sheet", 0);
             Label label = new Label(0, 2, "SECOND");
             Label label1 = new Label(0,1,"first");
-            Label label0 = new Label(0,0,"HEADING");
+            Label label0 = new Label(0,0,"আমার");
             Label label3 = new Label(1,0,"Heading2");
             Label label4 = new Label(1,1,String.valueOf(a));
             try {
@@ -79,8 +86,6 @@ public class MainActivity extends AppCompatActivity {
             workbook.write();
             try {
                 workbook.close();
-
-
             } catch (WriteException e) {
                 debugLog(e.getMessage());
             }
@@ -88,5 +93,22 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             debugLog(e.getMessage());
         }
+    }
+
+    @Override
+    protected void onPermissionDenied(String permission) {
+        super.onPermissionDenied(permission);
+        debugLog("Denied: "+permission);
+    }
+
+    @Override
+    protected void onPermissionGranted(String permission) {
+        super.onPermissionGranted(permission);
+        createExcelSheet();
+    }
+
+    @Override
+    protected void onPermissionBlocked(String permission) {
+        debugLog("Permission: "+permission);
     }
 }
